@@ -2,9 +2,13 @@ from rest_framework.generics import ListAPIView
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import OrderingFilter
 from rest_framework import viewsets
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from django.shortcuts import get_object_or_404
 
-from .models import Payment, User
+from lms.models import Course
+from .models import Payment, User, Subscription
 from .serializers import PaymentSerializer, UserSerializer
 
 
@@ -24,3 +28,21 @@ class UserViewSet(viewsets.ModelViewSet):
         if self.action == 'create':
             self.permission_classes = [AllowAny]
         return super().get_permissions()
+
+class SubscriptionAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, *args, **kwargs):
+        user = self.request.user
+        course_id = self.request.data.get('course_id')
+        course_item = get_object_or_404(Course, pk=course_id)
+
+        subs_item, created = Subscription.objects.get_or_create(user=user, course=course_item)
+
+        if not created:
+            subs_item.delete()
+            message = 'подписка удалена'
+        else:
+            message = 'подписка добавлена'
+
+        return Response({"message": message})
