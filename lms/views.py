@@ -16,6 +16,15 @@ class CourseViewSet(viewsets.ModelViewSet):
             return Course.objects.all()
         return Course.objects.filter(owner=self.request.user)
 
+    def get_permissions(self):
+        if self.action == 'create':
+            self.permission_classes = [IsAuthenticated, ~IsModerator]
+        elif self.action == 'destroy':
+            self.permission_classes = [IsAuthenticated, IsOwner]
+        elif self.action in ['update', 'retrieve', 'list']:
+            self.permission_classes = [IsAuthenticated, IsModerator | IsOwner]
+        return super().get_permissions()
+
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
 
