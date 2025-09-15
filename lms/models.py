@@ -9,6 +9,7 @@ class Course(models.Model):
     preview = models.ImageField(upload_to='lms/courses/', verbose_name='Превью', **NULLABLE)
     description = models.TextField(verbose_name='Описание', **NULLABLE)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, **NULLABLE)
+    price = models.PositiveIntegerField(default=10000, verbose_name='Цена')
 
     def __str__(self):
         return self.name

@@ -64,9 +64,11 @@ class User(AbstractUser):
 class Payment(models.Model):
     CASH = 'cash'
     TRANSFER = 'transfer'
+    STRIPE = 'stripe'
     PAYMENT_METHODS = (
         (CASH, 'Наличные'),
         (TRANSFER, 'Перевод на счет'),
+        (STRIPE, 'Stripe'),
     )
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='payments', verbose_name='Пользователь')
@@ -74,7 +76,11 @@ class Payment(models.Model):
     paid_course = models.ForeignKey(Course, on_delete=models.SET_NULL, **NULLABLE, related_name='payments', verbose_name='Оплаченный курс')
     paid_lesson = models.ForeignKey(Lesson, on_delete=models.SET_NULL, **NULLABLE, related_name='payments', verbose_name='Оплаченный урок')
     amount = models.PositiveIntegerField(verbose_name='Сумма оплаты')
-    payment_method = models.CharField(max_length=10, choices=PAYMENT_METHODS, default=TRANSFER, verbose_name='Способ оплаты')
+    payment_method = models.CharField(max_length=20, choices=PAYMENT_METHODS, default=STRIPE, verbose_name='Способ оплаты')
+
+    payment_link = models.URLField(max_length=400, **NULLABLE)
+    stripe_session_id = models.CharField(max_length=255, **NULLABLE)
+
 
     def __str__(self):
         return f'{self.user} - {self.payment_date} - {self.amount}'

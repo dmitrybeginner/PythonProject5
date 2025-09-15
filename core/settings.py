@@ -1,6 +1,7 @@
 from pathlib import Path
 import os
 from dotenv import load_dotenv
+import stripe
 
 load_dotenv()
 
@@ -34,6 +35,8 @@ INSTALLED_APPS = [
     "users",
     "lms",
     'rest_framework_simplejwt',
+    'drf_yasg',
+    'corsheaders',
 ]
 
 REST_FRAMEWORK = {
@@ -48,6 +51,7 @@ REST_FRAMEWORK = {
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -130,3 +134,18 @@ STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 AUTH_USER_MODEL = 'users.User'
+
+CORS_ALLOW_ALL_ORIGINS = True
+
+STRIPE_API_KEY = os.getenv('STRIPE_API_KEY')
+stripe.api_key = STRIPE_API_KEY
+
+SWAGGER_SETTINGS = {
+   'SECURITY_DEFINITIONS': {
+      'Bearer': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header'
+      }
+   }
+}
