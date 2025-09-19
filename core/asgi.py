@@ -1,9 +1,9 @@
 """
-ASGI config for core project.
+ASGI конфигурация для проекта core.
 
-It exposes the ASGI callable as a module-level variable named ``application``.
+Этот файл предоставляет ASGI-совместимое веб-приложение как переменную уровня модуля с именем ``application``.
 
-For more information on this file, see
+Для получения дополнительной информации по этому файлу см.
 https://docs.djangoproject.com/en/5.2/howto/deployment/asgi/
 """
 

@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from .models import User, Payment
+from .models import User, Payment, Subscription
 
 
 @admin.register(User)
@@ -29,3 +29,7 @@ class UserAdmin(BaseUserAdmin):
 class PaymentAdmin(admin.ModelAdmin):
     list_display = ('pk', 'user', 'payment_date', 'amount', 'payment_method')
     list_filter = ('payment_method',)
+
+@admin.register(Subscription)
+class SubscriptionAdmin(admin.ModelAdmin):
+    list_display = ('user', 'course')

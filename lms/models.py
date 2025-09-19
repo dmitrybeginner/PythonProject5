@@ -10,6 +10,7 @@ class Course(models.Model):
     description = models.TextField(verbose_name='Описание', **NULLABLE)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, **NULLABLE)
     price = models.PositiveIntegerField(default=10000, verbose_name='Цена')
+    last_updated = models.DateTimeField(auto_now=True, verbose_name='Последнее обновление')
 
     def __str__(self):
         return self.name
