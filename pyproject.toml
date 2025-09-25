@@ -31,4 +31,16 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.group.dev.dependencies]
 coverage = "^7.10.6"
+flake8 = "^7.3.0"
+black = "^25.9.0"
+isort = "^6.0.1"
 
+[tool.flake8]
+max-line-length = 119
+exclude = [
+    ".git",
+    "__pycache__",
+    ".venv",
+    "migrations",
+]
+ignore = ["W503", "E203", "W391"]

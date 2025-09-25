@@ -7,4 +7,4 @@ class LmsConfig(AppConfig):
 
     def ready(self):
         print("--- LMS APP IS READY, SIGNALS IMPORTED ---")
-        import lms.signals
+        import lms.signals  # noqa: F401

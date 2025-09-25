@@ -1,11 +1,13 @@
 from celery import shared_task
-from django.core.mail import send_mail
+from celery.utils.log import get_task_logger
 from django.conf import settings
+from django.core.mail import send_mail
+
 from lms.models import Course
 from users.models import Subscription
-from celery.utils.log import get_task_logger
 
 logger = get_task_logger(__name__)
+
 
 @shared_task
 def send_course_update_email(course_id):
@@ -18,13 +20,15 @@ def send_course_update_email(course_id):
             return
 
         send_mail(
-            subject=f'Обновление курса: {course.name}',
+            subject=f"Обновление курса: {course.name}",
             message=f'Курс "{course.name}", на который вы подписаны, был обновлен.',
             from_email=settings.DEFAULT_FROM_EMAIL,
             recipient_list=recipient_emails,
             fail_silently=False,
         )
-        logger.info(f"Отправлено письмо об обновлении курса {course.id} для {len(recipient_emails)} подписчиков.")
+        logger.info(
+            f"Отправлено письмо об обновлении курса {course.id} для {len(recipient_emails)} подписчиков."
+        )
 
     except Course.DoesNotExist:
         # Обрабатываем случай, когда курс может быть удален до выполнения задачи

@@ -1,9 +1,12 @@
+from datetime import timedelta
+
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
 from django.utils import timezone
-from datetime import timedelta
+
 from .models import Course, Lesson
 from .tasks import send_course_update_email
+
 
 @receiver(pre_save, sender=Course)
 def course_update_signal(sender, instance, **kwargs):
@@ -14,7 +17,8 @@ def course_update_signal(sender, instance, **kwargs):
                 send_course_update_email.delay(instance.id)
                 instance.last_updated = timezone.now()
         except sender.DoesNotExist:
-            pass # Не должно происходить при обновлении
+            pass  # Не должно происходить при обновлении
+
 
 @receiver(pre_save, sender=Lesson)
 def lesson_update_signal(sender, instance, **kwargs):
