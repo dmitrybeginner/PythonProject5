@@ -155,6 +155,8 @@ jobs:
         push: true
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
+        build-args: |
+          SECRET_KEY=${{ secrets.SECRET_KEY }}
 
   deploy:
     runs-on: ubuntu-latest
