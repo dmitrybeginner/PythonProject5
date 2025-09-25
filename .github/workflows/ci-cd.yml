@@ -122,7 +122,7 @@ jobs:
       uses: docker/setup-buildx-action@v3
 
     - name: Build Docker images
-      run: docker compose --env-file /dev/null build
+      run: docker compose --env-file /dev/null build --build-arg SECRET_KEY=${{ secrets.SECRET_KEY }}
 
   build-and-push:
     runs-on: ubuntu-latest
