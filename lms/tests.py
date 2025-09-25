@@ -33,7 +33,7 @@ class LessonTestCase(APITestCase):
             "course": self.course.pk,
             "video_link": "https://www.youtube.com/watch?v=new",
         }
-        response = self.client.post(reverse("lms:lesson-create"), data=data)
+        response = self.client.post(reverse("lms:lessons-list"), data=data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Lesson.objects.count(), 2)
 
@@ -41,20 +41,20 @@ class LessonTestCase(APITestCase):
         """Тестирование запрета создания урока модератором."""
         self.client.force_authenticate(user=self.moderator)
         data = {"name": "New Lesson", "course": self.course.pk}
-        response = self.client.post(reverse("lms:lesson-create"), data=data)
+        response = self.client.post(reverse("lms:lessons-list"), data=data)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_list_lessons(self):
         """Тестирование получения списка уроков."""
         self.client.force_authenticate(user=self.user)
-        response = self.client.get(reverse("lms:lesson-list"))
+        response = self.client.get(reverse("lms:lessons-list"))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data["results"]), 1)
 
     def test_list_lessons_by_moderator(self):
         """Тестирование получения списка уроков модератором."""
         self.client.force_authenticate(user=self.moderator)
-        response = self.client.get(reverse("lms:lesson-list"))
+        response = self.client.get(reverse("lms:lessons-list"))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data["results"]), 1)  # Should see all lessons
 
@@ -62,7 +62,7 @@ class LessonTestCase(APITestCase):
         """Тестирование получения урока владельцем."""
         self.client.force_authenticate(user=self.user)
         response = self.client.get(
-            reverse("lms:lesson-retrieve", kwargs={"pk": self.lesson.pk})
+            reverse("lms:lessons-detail", kwargs={"pk": self.lesson.pk})
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["name"], self.lesson.name)
@@ -71,7 +71,7 @@ class LessonTestCase(APITestCase):
         """Тестирование получения урока модератором."""
         self.client.force_authenticate(user=self.moderator)
         response = self.client.get(
-            reverse("lms:lesson-retrieve", kwargs={"pk": self.lesson.pk})
+            reverse("lms:lessons-detail", kwargs={"pk": self.lesson.pk})
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["name"], self.lesson.name)
@@ -81,7 +81,7 @@ class LessonTestCase(APITestCase):
         self.client.force_authenticate(user=self.user)
         data = {"name": "Updated Lesson Name"}
         response = self.client.patch(
-            reverse("lms:lesson-update", kwargs={"pk": self.lesson.pk}), data=data
+            reverse("lms:lessons-detail", kwargs={"pk": self.lesson.pk}), data=data
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.lesson.refresh_from_db()
@@ -92,7 +92,7 @@ class LessonTestCase(APITestCase):
         self.client.force_authenticate(user=self.moderator)
         data = {"name": "Updated by Moderator"}
         response = self.client.patch(
-            reverse("lms:lesson-update", kwargs={"pk": self.lesson.pk}), data=data
+            reverse("lms:lessons-detail", kwargs={"pk": self.lesson.pk}), data=data
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.lesson.refresh_from_db()
@@ -102,7 +102,7 @@ class LessonTestCase(APITestCase):
         """Тестирование удаления урока владельцем."""
         self.client.force_authenticate(user=self.user)
         response = self.client.delete(
-            reverse("lms:lesson-delete", kwargs={"pk": self.lesson.pk})
+            reverse("lms:lessons-detail", kwargs={"pk": self.lesson.pk})
         )
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(Lesson.objects.count(), 0)
@@ -111,7 +111,7 @@ class LessonTestCase(APITestCase):
         """Тестирование запрета удаления урока модератором."""
         self.client.force_authenticate(user=self.moderator)
         response = self.client.delete(
-            reverse("lms:lesson-delete", kwargs={"pk": self.lesson.pk})
+            reverse("lms:lessons-detail", kwargs={"pk": self.lesson.pk})
         )
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
@@ -123,6 +123,6 @@ class LessonTestCase(APITestCase):
             "course": self.course.pk,
             "video_link": "https://www.my-bad-site.com/",
         }
-        response = self.client.post(reverse("lms:lesson-create"), data=data)
+        response = self.client.post(reverse("lms:lessons-list"), data=data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("video_link", response.data)

@@ -95,6 +95,14 @@ jobs:
         echo "REDIS_HOST=localhost" >> .env
         echo "REDIS_PORT=${{ job.services.redis.ports[6379] }}" >> .env
 
+    - name: Wait for PostgreSQL
+      run: |
+        for i in $(seq 1 10); do
+          poetry run python manage.py dbshell -c "SELECT 1" && break
+          echo "Waiting for PostgreSQL... ($i/10)"
+          sleep 5
+        done
+
     - name: Run Migrations
       run: poetry run python manage.py migrate
 
