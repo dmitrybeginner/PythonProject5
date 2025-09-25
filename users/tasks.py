@@ -1,10 +1,13 @@
-from celery import shared_task
-from django.utils import timezone
 from datetime import timedelta
-from users.models import User
+
+from celery import shared_task
 from celery.utils.log import get_task_logger
+from django.utils import timezone
+
+from users.models import User
 
 logger = get_task_logger(__name__)
+
 
 @shared_task
 def deactivate_inactive_users():
@@ -13,4 +16,4 @@ def deactivate_inactive_users():
     for user in inactive_users:
         user.is_active = False
         user.save()
-        logger.info(f'Пользователь {user.email} был деактивирован из-за неактивности.')
+        logger.info(f"Пользователь {user.email} был деактивирован из-за неактивности.")

@@ -21,3 +21,6 @@ RUN poetry config virtualenvs.create false && poetry install --without dev --no-
 
 # Копируем остальной код проекта в рабочую директорию
 COPY . /app/
+
+# Собираем статические файлы
+RUN python manage.py collectstatic --noinput

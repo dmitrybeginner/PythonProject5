@@ -36,9 +36,10 @@ services:
     restart: always
     command: >
       bash -c "python manage.py migrate &&
+               python manage.py collectstatic --noinput &&
                python manage.py runserver 0.0.0.0:8000"
     ports:
-      - '8000:8000'
+      - '8000'
     volumes:
       - .:/app
     env_file:
@@ -49,11 +50,23 @@ services:
       redis:
         condition: service_started
 
+  nginx:
+    build: ./nginx
+    container_name: nginx
+    restart: always
+    ports:
+      - "80:80"
+    volumes:
+      - static_volume:/vol/web/static
+      - media_volume:/vol/web/media
+    depends_on:
+      - app
+
   celery:
     build: .
     container_name: celery
     restart: always
-    command: celery -A core worker -l info
+    command: python run_worker.py worker -l info
     volumes:
       - .:/app
     env_file:
@@ -65,7 +78,7 @@ services:
     build: .
     container_name: celery_beat
     restart: always
-    command: celery -A core beat -l info
+    command: python run_worker.py beat -l info
     volumes:
       - .:/app
     env_file:
@@ -76,3 +89,5 @@ services:
 volumes:
   pg_data:
   redis_data:
+  static_volume:
+  media_volume:

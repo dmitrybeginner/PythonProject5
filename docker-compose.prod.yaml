@@ -32,7 +32,7 @@ services:
     restart: always
     command: gunicorn core.wsgi:application --bind 0.0.0.0:8000
     ports:
-      - '8000:8000'
+      - '8000'
     env_file:
       - .env
     depends_on:
@@ -41,11 +41,23 @@ services:
       redis:
         condition: service_started
 
+  nginx:
+    build: ./nginx
+    container_name: nginx_prod
+    restart: always
+    ports:
+      - "80:80"
+    volumes:
+      - static_volume_prod:/vol/web/static
+      - media_volume_prod:/vol/web/media
+    depends_on:
+      - app
+
   celery:
     image: ${DOCKER_HUB_USERNAME}/pythonproject5:${IMAGE_TAG}
     container_name: celery_prod
     restart: always
-    command: celery -A core worker -l info
+    command: python run_worker.py worker -l info
     env_file:
       - .env
     depends_on:
@@ -55,7 +67,7 @@ services:
     image: ${DOCKER_HUB_USERNAME}/pythonproject5:${IMAGE_TAG}
     container_name: celery_beat_prod
     restart: always
-    command: celery -A core beat -l info
+    command: python run_worker.py beat -l info
     env_file:
       - .env
     depends_on:
@@ -64,3 +76,5 @@ services:
 volumes:
   pg_data_prod:
   redis_data_prod:
+  static_volume_prod:
+  media_volume_prod:
