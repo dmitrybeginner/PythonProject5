@@ -1,0 +1,93 @@
+version: '3.9'
+
+services:
+  db:
+    image: postgres:15
+    container_name: db
+    restart: always
+    env_file:
+      - .env
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    ports:
+      - '5436:5432'
+    volumes:
+      - pg_data:/var/lib/postgresql/data/
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7.2-alpine
+    container_name: redis
+    restart: always
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+
+  app:
+    build: .
+    container_name: app
+    restart: always
+    command: >
+      bash -c "python manage.py migrate &&
+               python manage.py collectstatic --noinput &&
+               python manage.py runserver 0.0.0.0:8000"
+    ports:
+      - '8000'
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+  nginx:
+    build: ./nginx
+    container_name: nginx
+    restart: always
+    ports:
+      - "80:80"
+    volumes:
+      - static_volume:/vol/web/static
+      - media_volume:/vol/web/media
+    depends_on:
+      - app
+
+  celery:
+    build: .
+    container_name: celery
+    restart: always
+    command: python run_worker.py worker -l info
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    depends_on:
+      - app
+
+  celery_beat:
+    build: .
+    container_name: celery_beat
+    restart: always
+    command: python run_worker.py beat -l info
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    depends_on:
+      - app
+
+volumes:
+  pg_data:
+  redis_data:
+  static_volume:
+  media_volume:
