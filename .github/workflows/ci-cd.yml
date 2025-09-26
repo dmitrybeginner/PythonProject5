@@ -178,7 +178,7 @@ jobs:
     - name: Build and push Nginx image
       uses: docker/build-push-action@v5
       with:
-        context: .
+        context: ./nginx
         file: ./nginx/Dockerfile
         push: true
         tags: ${{ steps.meta_nginx.outputs.tags }}
