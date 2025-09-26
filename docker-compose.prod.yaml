@@ -42,7 +42,7 @@ services:
         condition: service_started
 
   nginx:
-    build: ./nginx
+    image: ${DOCKER_HUB_USERNAME}/pythonproject5-nginx:${IMAGE_TAG}
     container_name: nginx_prod
     restart: always
     ports:
