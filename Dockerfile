@@ -26,4 +26,4 @@ RUN poetry config virtualenvs.create false && poetry install --without dev --no-
 COPY . /app/
 
 # Собираем статические файлы
-RUN python manage.py collectstatic --noinput
+RUN SECRET_KEY=just-a-dummy-key-for-building python manage.py collectstatic --noinput

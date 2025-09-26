@@ -95,13 +95,20 @@ jobs:
         echo "REDIS_HOST=localhost" >> .env
         echo "REDIS_PORT=${{ job.services.redis.ports[6379] }}" >> .env
 
+    - name: Install PostgreSQL client
+      run: sudo apt-get update && sudo apt-get -y install postgresql-client
+
     - name: Wait for PostgreSQL
       run: |
-        for i in $(seq 1 10); do
-          poetry run python manage.py dbshell -c "SELECT 1" && break
-          echo "Waiting for PostgreSQL... ($i/10)"
-          sleep 5
+        until PGPASSWORD=${{ env.POSTGRES_PASSWORD }} psql -h localhost -p ${{ job.services.postgres.ports[5432] }} -U ${{ env.POSTGRES_USER }} -d ${{ env.POSTGRES_DB }} -c '\q'; do
+          >&2 echo "Postgres is unavailable - sleeping"
+          sleep 1
         done
+        >&2 echo "Postgres is up - executing command"
+      env:
+        POSTGRES_USER: test_user
+        POSTGRES_PASSWORD: test_password
+        POSTGRES_DB: test_db
 
     - name: Run Migrations
       run: poetry run python manage.py migrate
@@ -139,8 +146,8 @@ jobs:
         username: ${{ secrets.DOCKER_HUB_USERNAME }}
         password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
-    - name: Extract metadata for Docker
-      id: meta
+    - name: Extract metadata for App image
+      id: meta_app
       uses: docker/metadata-action@v5
       with:
         images: ${{ secrets.DOCKER_HUB_USERNAME }}/pythonproject5
@@ -148,15 +155,34 @@ jobs:
           type=sha,prefix=,format=short
           latest
 
-    - name: Build and push Docker image
+    - name: Extract metadata for Nginx image
+      id: meta_nginx
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ secrets.DOCKER_HUB_USERNAME }}/pythonproject5-nginx
+        tags: |
+          type=sha,prefix=,format=short
+          latest
+
+    - name: Build and push App image
       uses: docker/build-push-action@v5
       with:
         context: .
+        file: ./Dockerfile
         push: true
-        tags: ${{ steps.meta.outputs.tags }}
-        labels: ${{ steps.meta.outputs.labels }}
+        tags: ${{ steps.meta_app.outputs.tags }}
+        labels: ${{ steps.meta_app.outputs.labels }}
         build-args: |
           SECRET_KEY=${{ secrets.SECRET_KEY }}
+
+    - name: Build and push Nginx image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: ./nginx/Dockerfile
+        push: true
+        tags: ${{ steps.meta_nginx.outputs.tags }}
+        labels: ${{ steps.meta_nginx.outputs.labels }}
 
   deploy:
     runs-on: ubuntu-latest
